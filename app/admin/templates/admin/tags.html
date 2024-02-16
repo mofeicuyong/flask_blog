@@ -1,0 +1,54 @@
+{% extends 'admin/common/base.html' %}
+{% import "admin/macros/_patination.html" as page_macros %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div>
+        <h3>标签列表</h3>
+        <form class="ml-3">
+          <div class="form-row align-items-center">
+            <div class="col-auto">
+              <a href="{{url_for('admin.tag_add')}}" class="title">添加</a>
+            </div>
+            <div class="col-auto">
+              <label class="sr-only" for="title">标签</label>
+              <input type="text" name="name" value="{{name}}" class="form-control mb-2" id="title" placeholder="标签">
+            </div>
+            <div class="col-auto">
+              <button type="submit" class="btn btn-primary mb-2">搜索</button>
+            </div>
+          </div>
+        </form>
+        </div>
+        <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">标签</th>
+                <th scope="col">编码</th>
+                <th scope="col">显示/隐藏</th>
+                <th scope="col">文章数量</th>
+                <th scope="col">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in tags.items %}
+              <tr>
+                <th scope="row">{{t.id}}</th>
+                <td>{{t.name}}</td>
+                <td>{{t.code}}</td>
+                <td>{{'显示' if t.visible else '隐藏'}}</td>
+                <td>{{t.articles.count()}}</td>
+                <td>
+                  <a href="{{url_for('admin.tag_edit',id=t.id)}}"
+                  class="btn btn-outline-primary btn-sm">修改</a>
+                  <!-- <a href="" class="btn btn-outline-danger btn-sm">删除</a> -->
+              </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+    </div>
+    {{ page_macros.pagination_widget(tags, 'admin.tags') }}
+</div>
+{% endblock %}

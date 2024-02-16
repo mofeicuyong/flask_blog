@@ -1,0 +1,205 @@
+{% extends 'admin/common/base.html' %}
+{% block content %}
+<form method="POST" id="form">
+    {{ form.hidden_tag() }}
+    <div class="form-group row">
+        <label for="title" class="col-sm-2 col-form-label">名称:</label>
+        <div class="col-sm-10">
+            {{form.title(id='title',class="form-control")}}
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="name" class="col-sm-2 col-form-label">标识:</label>
+        <div class="col-sm-10">
+            {{form.name(id='name',class='form-control')}}
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="icon" class="col-sm-2 col-form-label">图标:</label>
+        <div class="col-sm-10">
+            {{form.icon(id='icon',class='form-control')}}
+            <div class="ms-parent" style="width: 100%;">
+                <div class="icon-drop animated flipInX" style="display: none;max-height:200px;overflow-y:auto">
+                    <div>{% include 'admin/icon.html'%}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="name" class="col-sm-2 col-form-label">描述:</label>
+        <div class="col-sm-10">
+            {{form.desp(class='form-control')}}
+        </div>
+    </div>
+
+
+    <div class="form-group row">
+        <label for="name" class="col-sm-2 col-form-label">模板类型:</label>
+        <div class="col-sm-10">
+            {{form.tpl_mold(class='form-control')}}
+        </div>
+    </div>
+
+    <div id="div_tpl_list" class="form-group row">
+        <label for="name" class="col-sm-2 col-form-label">列表模板:</label>
+        <div class="col-sm-10">
+            {{form.tpl_list(class='form-control')}}
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label for="name" class="col-sm-2 col-form-label">详情模板:</label>
+        <div class="col-sm-10">
+            {{form.tpl_page(class='form-control')}}
+        </div>
+    </div>
+
+    <div id="div_content" class="form-group row">
+        <label for="name" class="col-sm-2 col-form-label">单页内容:</label>
+        <div class="col-sm-10">
+            {{form.content(class='form-control')}}
+        </div>
+    </div>
+
+    <div id="div_content" class="form-group row">
+        <label for="sn" class="col-sm-2 col-form-label">排序:</label>
+        <div class="col-sm-10">
+            {{form.sn(class='form-control')}}
+        </div>
+    </div>
+
+    <div id="div_content" class="form-group row">
+        <label for="sn" class="col-sm-2 col-form-label">显示:</label>
+        <div class="col-sm-10">
+            {{form.visible(class='form-control')}}
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <div class="col-sm-10">
+            {{form.submit(class='btn btn-primary')}}
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block js %}
+{{ super() }}
+<script src="{{url_for('.static',filename='lib/tinymce/js/tinymce/tinymce.min.js')}}"></script>
+<script>
+
+    var imagehosting_for = "thumbnail-img";
+    var tinymce_select_img_callback = null;
+    //图床
+    function imagehosting(flag) {
+        imagehosting_for = flag;
+        layer.open({
+            type: 2,
+            title: '图片管理',
+            shade: 0.8,
+            maxmin: true,
+            shadeClose: true,
+            area: ['80%', '90%'],
+            content: '{{url_for("admin.image_hosting")}}' //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
+        });
+    }
+
+    //image_hosting.html图床界面调用该函数
+    function imagehosting_callback(obj) {
+        //缩略图
+        if(imagehosting_for === 'thumbnail-img') {
+            $('#thumbnail-img').attr('src', obj.img_url);
+            $('#thumbnail').val(obj.img_url);
+        }
+        //编辑器 editor.md
+        if(imagehosting_for === 'editor-img') {
+            tinymce_select_img_callback(obj.img_url, { alt: obj.img_name });
+        }
+
+    }
+
+    $(document).ready(function(){
+
+        tinymce.init({
+            selector: '#content',
+            language:'zh_CN',
+            //skin:'oxide-dark',
+            plugins: 'print preview searchreplace autolink directionality visualblocks visualchars fullscreen image link media template code codesample table charmap hr pagebreak nonbreaking anchor insertdatetime advlist lists wordcount imagetools textpattern help emoticons autosave bdmap indent2em autoresize lineheight formatpainter axupimgs',
+            toolbar: 'code undo redo | forecolor backcolor bold italic underline strikethrough link anchor | alignleft aligncenter alignright alignjustify outdent indent ',
+            height: 650, //编辑器高度
+            min_height: 400,
+            /*content_css: [ //可设置编辑区内容展示的css，谨慎使用
+                '/static/reset.css',
+                '/static/ax.css',
+                '/static/css.css',
+            ],*/
+            fontsize_formats: '12px 14px 16px 18px 24px 36px 48px 56px 72px',
+            font_formats: '微软雅黑=Microsoft YaHei,Helvetica Neue,PingFang SC,sans-serif;苹果苹方=PingFang SC,Microsoft YaHei,sans-serif;宋体=simsun,serif;仿宋体=FangSong,serif;黑体=SimHei,sans-serif;Arial=arial,helvetica,sans-serif;Arial Black=arial black,avant garde;Book Antiqua=book antiqua,palatino;',
+            /*link_list: [
+                { title: '预置链接1', value: 'http://www.tinymce.com' },
+                { title: '预置链接2', value: 'http://tinymce.ax-z.cn' }
+            ], */
+            /*image_list: [
+                { title: '预置图片1', value: 'https://www.tiny.cloud/images/glyph-tinymce@2x.png' },
+                { title: '预置图片2', value: 'https://www.baidu.com/img/bd_logo1.png' }
+            ],*/
+            convert_urls: false,
+            image_class_list: [
+            { title: 'None', value: '' },
+            { title: 'Some class', value: 'class-name' }
+            ],
+            importcss_append: true,
+            //自定义文件选择器的回调内容
+            file_picker_callback: function (callback, value, meta) {
+                if (meta.filetype === 'file') {
+                    callback('https://www.baidu.com/img/bd_logo1.png', { text: 'My text' });
+                }
+                if (meta.filetype === 'image') {
+                    imagehosting('editor-img')
+                    tinymce_select_img_callback = callback;
+                    // callback('https://www.baidu.com/img/bd_logo1.png', { alt: 'My alt text' });
+                }
+                if (meta.filetype === 'media') {
+                    callback('movie.mp4', { source2: 'alt.ogg', poster: 'https://www.baidu.com/img/bd_logo1.png' });
+                }
+            },
+            autosave_ask_before_unload: false,
+        });
+
+        var tpl_mold = $('#tpl_mold').val();
+        if(tpl_mold === 'list'){
+            $('#div_tpl_list').show();
+            $('#div_content').hide();
+        }else {
+            $('#div_tpl_list').hide();
+            $('#div_content').show();
+        }
+        $('#tpl_mold').on('change',function(){
+            tpl_mold = $(this).val();
+            if(tpl_mold === 'list'){
+                $('#div_tpl_list').show();
+                $('#div_content').hide();
+            }else {
+                $('#div_tpl_list').hide();
+                $('#div_content').show();
+            }
+        });
+    });
+
+    $(function() {
+        $("input[name='icon']").focus(function() {
+            $(".icon-drop").show();
+        });
+        $("#form").click(function(event) {
+            var obj = event.srcElement || event.target;
+            if (!$(obj).is("input[name='icon']")) {
+                $(".icon-drop").hide();
+            }
+        });
+        $(".icon-drop").find(".ico-list i").on("click",
+            function() {
+            $('#icon').val($(this).attr('class'));
+        });
+    });
+</script>
+{% endblock %}

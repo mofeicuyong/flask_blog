@@ -1,0 +1,20 @@
+{% extends 'tend/common/base.html' %}
+{% import "tend/macros/_patination.html" as page_macros %}
+{% block css %}
+{{ super() }}
+<link href="{{ url_for('main.static', filename='css/detail.css') }}" rel="stylesheet">
+<link href="{{ url_for('main.static', filename='css/monokai.css') }}" rel="stylesheet">
+<link href="{{ url_for('main.static', filename='css/base_comment.css') }}" rel="stylesheet">
+{% endblock %}
+{% block title %}关于本站-{{ super() }}{% endblock %}
+{% block keywords %} 关于本站-何三笔记 {% endblock %}
+{% block description %} 关于本站对flask博客的介绍以及我对python未来的展望 {% endblock %}
+{% block content %}
+
+<div class="card rounded-0 border-0" id="article">
+    <div class="card-body px-2 px-md-3 pb-0">
+        {{category.content | safe}}
+    </div>
+</div>
+
+{% endblock %}

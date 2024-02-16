@@ -1,0 +1,46 @@
+{% extends 'tend/common/base.html' %}
+{% import "tend/macros/_flash.html" as flash_macros %}
+{% block title %}扫码支付{% endblock %}
+{% block css %}
+{{super()}}
+<link href="{{url_for('main.static',filename='css/account.css')}}" rel="stylesheet">
+{% endblock%}
+{% block js %}
+{{super()}}
+<script src="{{url_for('main.static',filename='js/qrcode.js')}}"></script>
+<script type="text/javascript">
+    var qrcode = new QRCode('qrcode', {
+        text: "{{ qrcode_url }}",
+        width: 256,
+        height: 256,
+        colorDark : '#FF0000',
+        colorLight : '#ffffff',
+        correctLevel : QRCode.CorrectLevel.H
+        });
+</script>
+{% endblock %}
+{% block main %}
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-sm-8 col-md-6 offset-sm-2 offset-md-3 px-xl-5">
+            <div class="card rounded-0 px-3 px-lg-4">
+                <div class="card-header text-center bg-white py-2"><h3 class="my-1 text-info">扫码支付</h3></div>
+                <div class="card-body">
+                    {{flash_macros.flash_msg()}}
+                    <div class="row justify-content-center">
+                        <h1>请使用支付宝扫码付款</h1>
+                        <p>订单编号: {{ out_trade_no }}</p>
+                        <div id="qrcode"></div>
+                    </div>
+                </div>
+                <div class="text-center mb-5" id="social-login">
+                    <div class="login-title"><span>更多操作</span></div>
+                    <div class="more-link mt-3">
+                        <a class="btn btn-info btn-sm rounded-0 mx-lg-3 mx-sm-2" href="/password">打开支付宝支付</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

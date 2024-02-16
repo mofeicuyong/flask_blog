@@ -1,0 +1,142 @@
+{% extends 'tend/common/base.html' %}
+{% block css %}
+{{ super() }}
+<link href="https://cdn.bootcss.com/simplemde/1.11.2/simplemde.min.css" rel="stylesheet">
+<link href="{{ url_for('main.static', filename='css/detail.css') }}" rel="stylesheet">
+<link href="{{ url_for('main.static', filename='css/monokai.css') }}" rel="stylesheet">
+<link href="{{ url_for('main.static', filename='css/base_comment.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block js %}
+{{ super() }}
+<script src="https://cdn.bootcss.com/simplemde/1.11.2/simplemde.min.js"></script>
+<script src="{{url_for('main.static',filename='js/comment/activate-power.js')}}"></script>
+<script src="{{url_for('main.static',filename='js/comment/editor.js')}}"></script>
+{% endblock %}
+
+{% block title %}{{ article.title }}-{{article.category.title}}-虚假真白萌{% endblock %}
+{% block keywords %} {{article.title}}-虚假真白萌 {% endblock %}
+{% block description %} {{article.summary|truncate(80,killwords=True,leeway=0) }} {% endblock %}
+{% block content %}
+<div class="">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb bg-white border-0 rounded-0 mb-2 py-2 f-15">
+            <li class="breadcrumb-item">
+                <i class="fa fa-home mr-1"></i><a href="/">首页</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{url_for('main.category',c=article.category.name)}}">{{article.category.title}}</a>
+            </li>
+            <li class="breadcrumb-item active d-none d-md-block" aria-current="page">{{article.title}}</li>
+            <li class="breadcrumb-item active d-md-none" aria-current="page">当前位置</li>
+        </ol>
+    </nav>
+    <div class="card rounded-0 border-0" id="article">
+        <div class="card-body px-2 px-md-3 pb-0">
+            <h1 class="card-title text-center font-weight-bold text-info">{{article.title}}</h1>
+            <hr>
+            <div class="text-center f-13">
+                <span class="mx-2" data-toggle="tooltip" data-placement="bottom" title=""
+                    data-original-title="最后编辑于{{article.timestamp.strftime('%Y年%m月%d日')}}">{{article.timestamp.strftime("%Y年%m月%d日
+                    %H:%M")}}</span>
+                <span class="mx-2">阅读 {{article.vc}}</span>
+                <!-- <a class="mx-2 to-com" href="#comment-block">评论 1</a> -->
+            </div>
+            <div class="article-body mt-4 f-17" style="line-height:1.8">
+                {{article.content_html|hidden_content|safe}}
+            </div>
+            {% if article.h_role == current_user.role %}
+            <div class="border border-info rounded-top">
+                {{article.h_content | safe}}
+            </div>
+            {% elif article.h_content | length > 0 %}
+            <p class="border border-warning p-2 text-center">
+                本文隐藏内容仅限VIP会员可以浏览
+            </p>
+            {% endif %}
+            <blockquote class="p-1 f-14 mt-3" style="border-left: 4px solid #dc3545;">
+                <p class="m-1"><strong>版权声明：</strong>如有条件，请支持正版.
+                </p>
+                <p class="m-1"><strong>本文链接：</strong><a href="{{request.url}}">{{request.url}}</a></p>
+            </blockquote>
+            <div class="tag-cloud my-4">
+                {% for tag in article.tags %}
+                <a class="tags f-16" href="{{url_for('main.tag',t=tag.code)}}">{{tag.name}}</a>
+                {% endfor %}
+            </div>
+            <nav class="more-page f-16">
+                <ul class="pagination justify-content-between">
+                    <li class="page-item">
+                        {% with a = article.previous %}
+                        {% if a %}
+                        <a class="d-none d-md-block" href="{{url_for('main.article',name=a.name)}}"
+                            title="上一篇：{{a.title}}">
+                            <i class="fa fa-chevron-left mr-1"></i>
+                            {{a.title | truncate(20,killwords=True,leeway=0)}}
+                        </a>
+                        <a class="d-md-none" href="{{url_for('main.article',name=a.name)}}">
+                            <i class="fa fa-chevron-left mr-1"></i>上一篇</a>
+                        {% endif %}
+                        {% endwith %}
+                    </li>
+                    <li class="page-item">
+                        {% with a = article.next %}
+                        {% if a %}
+                        <a class="d-none d-md-block" href="{{url_for('main.article',name=a.name)}}"
+                            title="下一篇：{{a.title}}">
+                            {{a.title | truncate(20,killwords=True,leeway=0)}}
+                            <i class="fa fa-chevron-right ml-1"></i>
+                        </a>
+                        <a class="d-md-none" href="{{url_for('main.article',name=a.name)}}">
+                            下一篇<i class="fa fa-chevron-right ml-1"></i>
+                        </a>
+                        {% endif %}
+                        {% endwith %}
+                    </li>
+                </ul>
+            </nav>
+
+
+            <!--相关文章-->
+            <div class="card border-0 rounded-0 px-3 mb-2 mb-md-3" id="hot_articles-card">
+                <div class="card-header bg-white px-0">
+                    <strong><i class="fa fa-book mr-2 f-17"></i>
+                        <a data-toggle="collapse" href="#hot_articles" role="button" aria-expanded="true"
+                            aria-controls="hot_articles">
+                            相关文章
+                        </a>
+                    </strong>
+                </div>
+                <div class="collapse show" id="hot_articles">
+                    <ul class="list-group list-group-flush f-16">
+                        {% for a in get_articles(tags=article.tag_names,is_hot=True, is_page=True).items %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center pr-2 py-2">
+                            <a class="category-item" href="{{url_for('main.article',name=a.name)}}"
+                                title="{{a.title}}">{{a.title  }}</a>
+                            <span class="badge text-center"></span>
+                        </li>
+                        {% endfor %}
+
+                    </ul>
+                </div>
+            </div>
+            <!--相关文章结束-->
+
+        </div>
+    </div>
+
+    <!--图片预览-->
+    <div class="modal fade" id="img-to-big" tabindex="-1" role="dialog" aria-labelledby="img-to-bigTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 90%">
+            <img class="rounded mx-auto d-block" alt="image" style="max-width: 100%">
+        </div>
+    </div>
+    {% if config.H3BLOG_COMMENT %}
+
+    {% import "tend/macros/_comment.html" as macro %}
+    {{ macro.macro_comment(article,current_user) }}
+
+    {% endif %}
+</div>
+{% endblock %}

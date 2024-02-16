@@ -1,0 +1,80 @@
+<div class="col-md-12"><div id="center-head">
+<input type="hidden" name="user_id" id="user_id" class="user_id" value="71640">
+<input type="hidden" name="my_id" id="my_id" class="my_id" value="71640">
+<input type="hidden" name="csrf" id="csrf" class="csrf" value="ee8owdCApj9jRWQMLeIeryd3cn23ygfoPMCY3gGy">
+<div class="forum-head-box">
+<div class="bg">
+<div class="head-area">
+<div class="avatar-box">
+<img src="{{url_for('.static',filename='img/avatar.png')}}" class="avatar ">
+</div>
+<div class="user-name-box">
+{{current_user.username}}<span class="user-lev">{% if current_user.role==1  %}
+    :svip
+{% endif %}
+{% if current_user.role==0%}
+:lv0
+{% endif %}
+{% if current_user.role==3 %}
+:vip
+{% endif %} </span>
+</div>
+</div>
+<div class="middle-area">
+<small>
+注册时间：<span class="fans"></span> {{current_user.member_since}}
+</small>
+<small>id:{{current_user.id}}</small>
+</div>
+<div class="footer-area">
+</div>
+</div>
+</div>
+</div>
+<div id="center-body">
+<div class="layui-tab layui-tab-brief">
+
+<div align="center">
+    <a class="btn btn-outline-info btn-sm" href="{{ url_for('admin.write') }}">
+            撰写文章
+          </a>
+<a class="btn btn-outline-info btn-sm"  href="{{url_for('admin.articles')}}">
+            文章列表
+          </a>
+
+    <a class="btn btn-outline-info btn-sm" href="{{url_for('admin.categorys')}}">
+            分类列表
+          </a>
+
+
+    <a class="btn btn-outline-info btn-sm" href="{{url_for('admin.tags')}}">
+            标签管理
+          </a>
+
+
+    <a class="btn btn-outline-info btn-sm" href="{{url_for('admin.recommends')}}">
+            文章推荐
+          </a>
+
+
+    <a class="btn btn-outline-info btn-sm" href="{{url_for('admin.settings')}}">
+            网站设置
+          </a>
+
+
+    <a class="btn btn-outline-info btn-sm" href="{{url_for('admin.users')}}">
+            用户管理
+          </a>
+
+
+    <a class="btn btn-outline-info btn-sm"  href="{{url_for('admin.invit_codes')}}">
+            邀请码
+          </a>
+
+</div>
+
+
+
+</div>
+</div>
+</div>

@@ -1,0 +1,188 @@
+.clear{
+	clear:both;
+}
+.content-header{
+	display: none;
+}
+
+.content{
+	width: 80%;
+}
+
+#carousel-box > [carousel-item] {
+    border-radius: 5px;
+}
+
+.fr{
+    float:left;width:49%;
+}
+
+.fl{
+    float:right;width:49%;
+}
+
+.card{
+	width: 100%;
+	position: relative;
+    margin-left: 0;
+    margin-right: 0;
+    height: auto;
+    zoom: 1;
+    display: block;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    margin-top: 20px;
+    position: relative;
+    -webkit-transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
+    background: white;
+    min-height: 200px;
+    padding: 10px;
+}
+
+.card:hover{
+    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.15);
+    border-color: transparent;
+    position: relative;
+}
+
+.card-head{
+	width: 100%;
+	padding:10px;
+	height:30px;
+	font-size: 17px;
+	text-align: left;
+	font-weight: 600;
+	color: gray;
+	line-height: 30px;
+}
+.rec-title{
+	font-weight: 600;
+	font-size: 15px;
+	text-align: left;
+}
+.rec-brief{
+	font-size:10px;
+	text-align: left;
+}
+.right-tag{
+	float: right;
+	font-size:10px;
+	color: grey;
+	cursor: pointer;
+}
+.announcement-box,.recommend-box{
+	float: left;
+	/*width: 49%;*/
+}
+.new-update-box,.mycollection-box{
+	float: right;
+	/*width: 49%;*/
+}
+.time{
+	float: right;
+    font-size: 10px;
+    -webkit-transform: scale(0.8);
+    line-height: 25px;
+}
+/*For Nearly Updates Novels*/
+.updateDes {
+    position: relative;
+    height: 4em;
+    padding: 0.6em 0.2em 0.2em 0.2em;
+    display: flex;
+    color: white;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-direction: column;
+    background-image: linear-gradient(0deg, black, transparent);
+    border-radius: 0em 0em 0.6em 0.6em;
+}
+
+.updateImgOuter {
+    height: 8em;
+}
+
+.updateOuter {
+    width: 9em;
+    height: 13em;
+    font-size: 15px;
+    margin: 0px 0.2em 1em 0.2em;
+    text-align: center;
+    display: grid;
+    grid-template-rows: 8fr 4fr 1fr;
+}
+
+.updateImg {
+    width: 9em;
+    height: 12em;
+    border-radius: 0.6em;
+}
+
+.updateTitle {
+    height: 1.5em;
+    font-size: 1em;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.updateChapter {
+    height: 2.5em;
+    font-size: 0.8em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2em;
+}
+
+.updateCards {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.updateOuter .time {
+    float: initial;
+    font-size: 0.8em;
+}
+
+.main-footer {
+    text-align: center;
+}
+
+@media screen and (max-width: 960px){
+    .updateOuter {
+        font-size: 3vw !important;
+    }
+    #carousel-box > [carousel-item] {
+        border-radius: 0px;
+    }
+    .fr,.fl{
+        float:left;width:100%;
+    }
+    .content{
+		width: 100%;
+		padding: 0px;
+	}
+	.announcement-box,.recommend-box,.new-update-box,.mycollection-box{
+		float: none;
+		width: 100%;
+	}
+
+}
+@media screen and (max-width: 1300px) and (min-width: 961px){
+    .updateOuter {
+        font-size: 1vw !important;
+    }
+}
+@media screen and (min-width: 1500px){
+    .updateOuter {
+        font-size: 1vw !important;
+    }
+}
+@media screen and (min-width: 2100px){
+    .updateOuter {
+        font-size: 1.1vw !important;
+    }
+}

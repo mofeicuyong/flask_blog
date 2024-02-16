@@ -1,0 +1,115 @@
+<!--个人空间-->
+            <link href="../static/css/index.css" rel="stylesheet">
+<div class="announcement-box card border-0 rounded-0 px-3 mb-2 mb-md-3" id="home-card">
+    <div class="card-header bg-white px-0">
+        <strong><i class="fa fa-paper-plane mr-2 f-17"></i>本站公告</strong>
+        <img class="float-right" id="theme-img"
+             src="{{ url_for('main.static',filename='img/toggle-dark.png') if request.cookies.get('toggleTheme') == 'dark' else url_for('main.static',filename='img/toggle-light.png') }}"
+             alt="theme-toggle" title="切换主题" data-darkico="{{url_for('main.static', filename='img/toggle-dark.png')}}" data-lightico="{{url_for('main.static', filename='img/toggle-light.png')}}"
+             data-darkcss="{{url_for('main.static', filename='css/night.css')}}">
+    </div>
+
+    <div class="card-body px-0 pt-3 pb-1">
+        <div class="row text-center">
+            <img class="rounded" style="width: 90%; height: 90%;" src="{{url_for('.static',filename='img/gonggao.jpg')}}">
+        </div>
+    </div>
+</div>
+<!--文章分类-->
+<div class="announcement-box card border-0 rounded-0 px-3 mb-2 mb-md-3" id="category-card">
+    <div class="card-header bg-white px-0">
+        <strong><i class="fa fa-book mr-2 f-17"></i><a  data-toggle="collapse" href="#collapse_categroys" role="button" aria-expanded="false" aria-controls="collapse_categroys">文章分类</a></strong>
+    </div>
+    <div class="collapse" id="collapse_categroys">
+        <ul class="list-group list-group-flush f-16">
+            {% for c in get_categorys() %}
+            <li class="list-group-item d-flex justify-content-between align-items-center pr-2 py-2">
+                <a class="category-item" href="{{url_for('main.category',c=c.name)}}"
+                title="查看【{{c.title}}】分类下所有文章">{{c.title}}</a>
+                <span class="badge text-center">></span>
+            </li>
+            {% endfor %}
+            
+        </ul>
+    </div>
+</div>
+<!--标签云-->
+<div class="announcement-box card border-0 rounded-0 px-3 mb-2 mb-md-3" id="tag-card">
+    <div class="card-header bg-white px-0">
+        <strong><i class="fa fa-tags mr-2 f-17"></i>
+            <a  data-toggle="collapse" href="#collapse_tags" role="button" aria-expanded="true" aria-controls="collapse_tags">
+            标&nbsp;签&nbsp;云
+            </a>
+        </strong>
+    </div>
+    <div class="collapse show" id="collapse_tags">
+        <div class="card-body px-0 py-3">
+            <div class="tag-cloud"> 
+            {% for t in get_tags() %}
+            <a href="/tag/{{t.code}}/" class="tags f-16" id="tag-{{t.id}}"
+                title="{{t.name}}">{{t.name}}</a>
+            {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--最热文章-->
+<div class="announcement-box card border-0 rounded-0 px-3 mb-2 mb-md-3" id="hot_articles-card">
+    <div class="card-header bg-white px-0">
+        <strong><i class="fa fa-book mr-2 f-17"></i>
+            <a  data-toggle="collapse" href="#hot_articles" role="button" aria-expanded="true" aria-controls="hot_articles">
+            最热文章
+            </a>
+        </strong>
+    </div>
+    <div class="collapse show" id="hot_articles">
+        <ul class="list-group list-group-flush f-16">
+            {% for a in get_articles(is_hot=True, is_page=True).items %}
+            <li class="list-group-item d-flex justify-content-between align-items-center pr-2 py-2">
+                <a class="category-item" href="{{url_for('main.article',name=a.name)}}"
+                title="{{a.title}}">{{a.title | truncate(28,killwords=True,leeway=0) }}</a>
+                <span class="badge text-center"></span>
+            </li>
+            {% endfor %}
+            
+        </ul>
+    </div>
+</div>
+
+<!--最新文章-->
+<div class="announcement-box card border-0 rounded-0 px-3 mb-2 mb-md-3" id="new_articles-card">
+    <div class="card-header bg-white px-0">
+        <strong><i class="fa fa-book mr-2 f-17"></i>
+            <a  data-toggle="collapse" href="#new_articles" role="button" aria-expanded="true" aria-controls="new_articles">
+            最新文章
+            </a>
+        </strong>
+    </div>
+    <div class="collapse show" id="new_articles">
+        <ul class="list-group list-group-flush f-16">
+            {% for a in get_articles(is_page=True).items %}
+            <li class="list-group-item d-flex justify-content-between align-items-center pr-2 py-2">
+                <a class="category-item" href="{{url_for('main.article',name=a.name)}}"
+                title="{{a.title}}">{{a.title | truncate(28,killwords=True,leeway=0) }}</a>
+                <span class="badge text-center"></span>
+            </li>
+            {% endfor %}
+            
+        </ul>
+    </div>
+</div>
+
+
+
+<!--归档 在线工具-->
+<div class="announcement-box card border-0 rounded-0 px-3 mb-2 mb-md-3" id="new_articles-card">
+    <div class="card-header bg-white px-0">
+        <strong>
+            <a href="{{url_for('main.archive')}}" role="button" >
+            归档
+            </a>
+        </strong>
+    </div>
+</div>
+

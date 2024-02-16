@@ -1,0 +1,66 @@
+{% extends 'vip/common/base.html' %}
+{% import "vip/macros/_patination.html" as page_macros %}
+{% block content %}
+<div class="admin-content">
+    <div class="row">
+        <form class="ml-3">
+          <div class="form-row align-items-center">
+            <div class="col-auto">
+              <label class="sr-only" for="title">标题</label>
+              <input type="text" name="title" value="{{title}}" class="form-control mb-2" id="title" placeholder="标题">
+            </div>
+            <!-- <div class="col-auto">
+              <label class="sr-only" for="inlineFormInputGroup">Username</label>
+              <div class="input-group mb-2">
+                <div class="input-group-prepend">
+                  <div class="input-group-text">@</div>
+                </div>
+                <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Username">
+              </div>
+            </div> -->
+            <div class="col-auto">
+              <button type="submit" class="btn btn-primary mb-2">搜索</button>
+            </div>
+          </div>
+        </form>
+        <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">标题</th>
+                <th scope="col">分类</th>
+                <th scope="col">状态</th>
+                <th scope="col">时间</th>
+                <th scope="col">作者</th>
+                <th scope="col" width="180px">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for article in articles.items %}
+                  {% if article.author==current_user._get_current_object() %}
+
+
+              <tr>
+                <th scope="row">{{article.id}}</th>
+                <td>{{ article.title|title }}</td>
+                <td>{{ article.category.title}}</td>
+                <td>{{ '已发布' if article.state == 1 else '草稿'}}</td>
+                <td>{{ article.timestamp.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+                <td>{{ article.author.username }}</td>
+                <td>
+                    <a href="{{url_for('vip.article_edit',id=article.id)}}"
+                    class="btn btn-outline-primary btn-sm">修改</a>
+                    <!-- <a href="" class="btn btn-outline-danger btn-sm">删除</a> -->
+                    <a href="{{url_for('main.article',name=article.name)}}" target="_blank" class="btn btn-outline-info btn-sm">预览</a>
+                    <a href="javascript:baidu_push_article('{{url_for('.baidu_push_article')}}','{{url_for('main.article',name=article.name)}}')" class="btn btn-outline-info btn-sm">推送</a>
+                </td>
+                    
+              </tr>
+                   {% endif %}
+              {% endfor %}
+            </tbody>
+          </table>
+    </div>
+    {{ page_macros.pagination_widget(articles, request.endpoint,title = title) }}
+</div>
+{% endblock %}

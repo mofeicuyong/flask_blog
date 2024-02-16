@@ -1,0 +1,398 @@
+{% extends 'vip/common/base.html' %}
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="{{url_for('.static',filename='editor_md/editormd.min.css')}}">
+<link rel="stylesheet" href="{{url_for('.static',filename='css/write.css')}}">
+<link rel="stylesheet" href="{{url_for('.static',filename='lib/jquery_datepicker/css/foundation-datepicker.css')}}">
+<link rel="stylesheet" href="{{url_for('.static',filename='css/tagsinput.css')}}">
+<link rel="stylesheet" href="{{url_for('.static',filename='css/typeaheadjs.css')}}">
+<style>
+    .editormd-fullscreen{
+        z-index: 99;
+    }
+</style>
+{% endblock %}
+{% block js %}
+{{ super() }}
+<script src="{{url_for('.static',filename='editor_md/editormd.min.js')}}"></script>
+<script src="{{url_for('.static',filename='lib/jquery_datepicker/js/foundation-datepicker.js')}}"></script>
+<script src="{{url_for('.static',filename='lib/jquery_datepicker/js/foundation-datepicker.zh-CN.js')}}"></script>
+<script src="{{url_for('.static',filename='js/tagsinput.js')}}"></script>
+<script src="{{url_for('.static',filename='lib/typeahead/typeahead.bundle.min.js')}}"></script>
+<script>
+
+    var imagehosting_for = "thumbnail-img";
+    //图床
+    function imagehosting(flag) {
+        imagehosting_for = flag;
+        layer.open({
+            type: 2,
+            title: '图片管理',
+            shade: 0.8,
+            maxmin: true,
+            shadeClose: true,
+            area: ['80%', '90%'],
+            content: '{{url_for("vip.image_hosting")}}' //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
+        });
+    }
+
+    function imagehosting_callback(obj) {
+        //缩略图
+        if(imagehosting_for === 'thumbnail-img') {
+            $('#thumbnail-img').attr('src', obj.img_url);
+            $('#thumbnail').val(obj.img_url);
+        }
+        //编辑器 editor.md
+        if(imagehosting_for === 'editor-img') {
+            console.log(myEditor)
+            myEditor.settings.imagehosting_callback(obj)
+        }
+
+    }
+
+    var myEditor;
+    $(function () {
+        myEditor = editormd("write-editor", {
+            // width: '100%',
+            height: '450px',
+            syncScrolling: "single",
+            path: "{{url_for('.static',filename='editor_md/lib/')}}",
+            emoji: true,//emoji表情，默认关闭
+            watch: true, // 关闭实时预览
+            taskList: true,
+            tocm: true, // Using [TOCM]
+            tex: true,// 开启科学公式TeX语言支持，默认关闭
+            //flowChart: true,//开启流程图支持，默认关闭
+            //sequenceDiagram: true,//开启时序/序列图支持，默认关闭,
+            //启动本地图片上传功能
+            imageUpload: true,
+            // imageFormats: ["jpg", "jpeg", "gif", "png", "bmp", "webp"],
+            // imageUploadURL: "{{url_for('.upload')}}",
+            toolbarIcons: function () {
+                // Or return editormd.toolbarModes[name]; // full, simple, mini
+                // Using "||" set icons align right.
+                // ["undo", "redo", "|", "bold", "del", "italic", "quote", "|", "h1", "h2", "h3", "h4",
+                //     "h5", "h6", "|", "list-ul", "list-ol", "hr", "|", "link", "reference-link", "image",
+                //     "code", "code-block", "table", "datetime", "html-entities", "goto-line", "search", "||",
+                //     "fullscreen", "watch", "preview", "info", "|", "publish"]
+                return ["bold", "del", "italic", "quote", "|", "h2", "h3", "h4",
+                    "|", "list-ul", "list-ol", "hr", "|", "link", "reference-link", "image",
+                    "code", "code-block", "table", "|", "import_url","watch", "fullscreen"]
+            },
+            toolbarIconTexts: {
+                import_url: '导入'
+            },
+            toolbarHandlers:{
+                 /**
+                 * @param {Object}      cm         CodeMirror对象
+                 * @param {Object}      icon       图标按钮jQuery元素对象
+                 * @param {Object}      cursor     CodeMirror的光标对象，可获取光标所在行和位置
+                 * @param {String}      selection  编辑器选中的文本
+                 */
+                import_url: function(cm, icon, cursor, selection) {
+                    //var cursor    = cm.getCursor();     //获取当前光标对象，同cursor参数
+                    //var selection = cm.getSelection();  //获取当前选中的文本，同selection参数
+
+                    // 替换选中文本，如果没有选中文本，则直接插入
+                    // cm.replaceSelection(selection);
+
+                    // 如果当前没有选中的文本，将光标移到要输入的位置
+                    if(selection === "") {
+                        cm.setCursor(cursor.line, cursor.ch + 1);
+                    }
+
+                    // this == 当前editormd实例
+                    // console.log("testIcon =>", this, cm, icon, cursor, selection);
+                    console.log(this)
+
+                    let dialogName = 'import_url_name', dialog;
+                    let editor = $('#write-editor')
+                    if (editor.find("." + dialogName).length < 1){
+                        var dialogContent ='<div class="editormd-form">';
+                            dialogContent += '<label>文章地址</label>'
+                            dialogContent += '<input type="text" name="url" placeholder="文章地址与内容二选一">'
+                            dialogContent += '<br/>'
+                            dialogContent += '<label>文章内容</label>'
+                            dialogContent += '<input type="text" name="html" placeholder="文章内容HTML">'
+                            dialogContent += '<br/>'
+                            dialogContent += '<label>导入图片</label>'
+                            dialogContent += '<a href="javascript:;"><label for="editormd-import-dialog-radio" title="是">'
+                            dialogContent += '<input type="radio" name="download" id="yes" value="1">是&nbsp;'
+                            dialogContent += '</label></a>'
+                            dialogContent += '<a href="javascript:;"><label for="editormd-import-dialog-radio" title="否">'
+                            dialogContent += '<input type="radio" name="download" id="no" value="0" checked="checked">否&nbsp;'
+                            dialogContent += '</label></a>'
+                            dialogContent += '</div>';
+
+                        dialog = this.createDialog({
+                            title      : '导入文章',
+                            width      : (this.settings.imageUpload) ? 465 : 380,
+                            height     : 254,
+                            name       : dialogName,
+                            content    : dialogContent,
+                            mask       : this.settings.dialogShowMask,
+                            drag       : this.settings.dialogDraggable,
+                            lockScreen : this.settings.dialogLockScreen,
+                            maskStyle  : {
+                                opacity         : this.settings.dialogMaskOpacity,
+                                backgroundColor : this.settings.dialogMaskBgColor
+                            },
+                            buttons : {
+                                enter : [this.lang.buttons.enter, function() {
+                                    var url  = this.find("[name='url']").val();
+                                    var html = this.find("[name='html']").val();
+                                    var download = this.find("[name=\"download\"]:checked").val();
+                                    console.log(url,download)
+
+                                    if (url === "" && html.length == 0)
+                                    {
+                                        alert('文章地址不能为空');
+                                        return false;
+                                    }
+                                    let that = this;
+                                    $.post('{{url_for("vip.import_article")}}', {url: url, html: html, 'csrf_token':'{{ csrf_token() }}', download_img: download}, (resp)=>{
+                                        //console.log(resp)
+                                        //cm.replaceSelection(resp);
+                                        cm.setValue(resp)
+                                        that.find("[name='url']").val('');
+                                        this.hide().lockScreen(false).hideMask();
+                                    })
+                                    
+                                    // this.hide().lockScreen(false).hideMask();
+
+                                    return false;
+                                }],
+
+                                cancel : [this.lang.buttons.cancel, function() {
+                                    this.hide().lockScreen(false).hideMask();
+
+                                    return false;
+                                }]
+                            }
+                        });
+                    }
+                    
+                    dialog = editor.find("." + dialogName);
+                    dialog.find("[type=\"text\"]").val("");
+
+                    this.dialogShowMask(dialog);
+                    this.dialogLockScreen();
+                    dialog.show();
+                },
+            },
+
+            lang : {
+                toolbar : {
+                    import_url:'导入',
+                }
+            },
+            imagehosting: function () {
+                imagehosting('editor-img');
+            },
+            imagehosting_callback:function(obj) {
+                
+            }
+        });
+
+        function save(state) {
+            // $('#tags').val($('#tags').val());
+            $.ajax({
+                url: '{{url_for("vip.write")}}',
+                type: "post",
+                data: $("form").serialize(),
+                dataType: 'json',
+                success: function (res) {
+                    if (res.code == 1) {
+                        if (res.id) {
+                            $('#id').val(res.id);
+                        }
+                        toastr.success(res.msg);
+                    } else {
+                        toastr.error(res.msg);
+                    }
+                },
+                fail: function (res) {
+                    toastr.error('网络错误');
+                }
+            })
+        }
+
+        //注册保存按钮点击事件
+        $('#form').on('submit', function (ev) {
+            ev.preventDefault();
+            // var content = $('#hidden-body').val();
+            // var summary = content.replace(/#*.*#/g, '').replace(/[^a-z0-9\u4e00-\u9fa5]/, '').substring(0, 200) // 除去标题部分，截取200个字用来显示
+            // $('#summary').val(summary);
+            save(1);
+        });
+
+        //setInterval(save,1000 * 15,1);
+
+        //注册草稿按钮
+        $('#draft').click(function (e) {
+            $('#state').val(0);
+            $('#form').submit();
+        });
+
+        //注册发布按钮点击
+        $('#publish').click(function (e) {
+            $('#state').val(1);
+            $('#form').submit();
+        });
+
+        //上传图片
+        $('#thumbnail-upload-btn').click(function (e) {
+            imagehosting('thumbnail-img');
+        });
+
+        //固定路径编辑
+        $('#baseURL').html(window.location.protocol + "//" + window.location.host + '/');
+
+        $('#timestamp').fdatepicker({
+			format: 'yyyy-mm-dd hh:ii:ss',
+			pickTime: true
+        });
+        
+
+        //tags
+        $('#tags').tagsinput({
+            typeahead: {
+                // source: function(query) {
+                //     return $.get('http://someservice.com');
+                // }
+                source: ['Amsterdam', 'Washington', 'Sydney', 'Beijing', 'Cairo']
+            }
+        });
+    })
+</script>
+{% endblock %}
+{% block content %}
+<div class="content-wrapper" style="min-height: 600px;">
+    <section class="content-header">
+        <h3>撰写</h3>
+    </section>
+    <section class="content">
+        <form id="form" method="POST">
+            {{ form.hidden_tag() }}
+            <div class="row">
+                <div class="col-lg-9 col-md-9">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroup-sizing-default">标题</span>
+                        </div>
+                        {{form.title(class='form-control')}}
+                    </div>
+                    <div class="mb-2 ml-2">
+                        <div class="row justify-content-between">
+                            <div class="col-10">
+                                网址:<span
+                                id="baseURL">http://www.h3blog.com/</span>article/{{form.name(class='border-top-0 border-left-0 border-right-0 input-small w-auto')}}
+                            </div>
+                            <div class="col-2 mr-auto">
+                                <a href="{{ request.path + '?editor=tinymce'}}">切换编辑器</a>
+                            </div>
+                          </div>
+                        
+                            
+                    </div>
+                    <div class="write-article">
+                        <div id="write-editor">
+                            {{form.content(id='hidden-body',class='hidden')}}
+                        </div>
+                    </div>
+                    <div class="accordion" id="accordionExample">
+                        <div class="card">
+                            <div class="card-header" id="headingOne" style="padding:0px;">
+                              <h2 class="mb-0">
+                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                  文章简介
+                                </button>
+                              </h2>
+                            </div>
+                        
+                            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+                              <div class="card-body">
+                                {{form.summary(id='summary',class='form-control')}}
+                              </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header" id="headingTwo" style="padding:0px;">
+                              <h2 class="mb-0">
+                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                                  权限内容
+                                </button>
+                              </h2>
+                            </div>
+                        
+                            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+                              <div class="card-body">
+                                <div class="form-group row">
+                                    <label for="staticEmail" class="col-sm-2 col-form-label">选择角色</label>
+                                    <div class="col-sm-10">
+                                        {{form.h_role(class='form-control')}}
+                                    </div>
+                                  </div>
+                                  <div class="form-group row">
+                                    <label for="inputPassword" class="col-sm-2 col-form-label">可见内容</label>
+                                    <div class="col-sm-10">
+                                        {{form.h_content(class='form-control')}}
+                                    </div>
+                                </div>
+                              </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-3">
+                    <div id="saveBtns" class="card">
+                        <div class="card-body">
+                            {{form.save(id='save',class="btn btn-primary btn-sm")}}
+                            <button id='draft' type="button" class="btn btn-secondary btn-sm">草稿</button>
+                            <button id='publish' type="button" class="btn btn-success btn-sm">发布</button>
+                        </div>
+                    </div>
+                    <!--save btn end-->
+
+                    <div id="category" class="card mt-3">
+                        <h6 class="card-title p-2 border-bottom">分类</h6>
+                        <div class="card-body">
+                            {{form.category_id(id='category_id',class='form-control')}}
+                        </div>
+                    </div>
+                    <!--category end-->
+                    <div id="tags_div" class="card mt-3">
+                        <h6 class="card-title p-2 border-bottom">标签</h6>
+                        <div class="card-body">
+                            {{form.tags(class='form-control')}}
+                            <a href="#" style="font-size: xx-small;">智能添加</a>
+                        </div>
+                    </div>
+                    <!--tags end-->
+                    <div id="thumbnail-div" class="card mt-3">
+                        <h6 class="card-title p-2 border-bottom">缩略图</h6>
+                        <div class="card-body">
+                            <img id="thumbnail-img"
+                                src="{{form.thumbnail.data if form.thumbnail.data else url_for('static',filename='img/thumbnail.jpg')}}"
+                                class="card-img-top" alt="缩略图">
+                            <div class="mt-2">
+                                <button id="thumbnail-upload-btn" type="button"
+                                    class="btn btn-outline-secondary btn-sm">选择图片</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!--thumbnail end-->
+                    <div id="publish-time" class="card mt-3">
+                        <h6 class="card-title p-2 border-bottom">发布时间</h6>
+                        <div class="card-body">
+                            {{form.timestamp(type='datetime',class='form-control')}}
+                        </div>
+                    </div><!--publish time end-->
+                </div>
+            </div>
+        </form>
+
+    </section>
+</div>
+{% endblock %}

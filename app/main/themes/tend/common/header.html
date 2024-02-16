@@ -1,0 +1,76 @@
+<!--导航开始-->
+<nav class="navbar navbar-expand-md bg-white fixed-top blog-navbar py-md-0">
+    <a class="navbar-brand d-md-none d-lg-block" id="site-logo-name" href="/">
+        <img src="{{url_for('static',filename='img/logo.jpg')}}" alt="虚假真白萌" class="logo" style="display: none;">
+        <h1 style="display: none;">虚假真白萌</h1>
+        <strong class="px-2">虚假真白萌</strong>
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item mr-2">
+                <a class="nav-link py-md-3 {{'active' if request.path == url_for('main.index') else ''}}"
+                    href="{{url_for('main.index')}}"><i class="fa fa-home mr-1"></i>首页<span
+                        class="sr-only">(current)</span></a>
+            </li>
+        <li class="nav-item mr-2">
+                <a class="nav-link py-md-3 {{'active' if request.path == url_for('vip.write') else ''}}
+                    {{'active' if request.path == url_for('admin.write') else ''}}"
+
+
+            {% if current_user._get_current_object().role==1 %}
+            href="{{url_for('admin.write')}}"><i class="fa fa-home mr-1"></i>发文章<span
+                        class="sr-only">(current)</span>{% endif %}
+                {% if current_user._get_current_object().role!=1 %}
+            href="{{url_for('vip.write')}}"><i class="fa fa-home mr-1"></i>发文章<span
+                        class="sr-only">(current)</span>{% endif %}
+                </a>
+            </li>
+            {% for c in get_categorys(visible=True) %}
+            <li class="nav-item mr-2">
+                <a class="nav-link py-md-3 {{'active' if url_for('main.category', c=c.name) in request.path else ''}}"
+                    href="{{url_for('main.category', c=c.name)}}"><i class="{{c.icon}} mr-1"></i>{{c.title}}</a>
+            </li>
+            {% endfor %}
+            <form class="nav-item navbar-form mr-2 py-md-2" role="search" method="POST" id="searchform"
+                action="{{url_for('main.search')}}">
+                {{ g.search_form.hidden_tag() }}
+                <div class="input-group">
+                    {{g.search_form.search(type='search',class='form-control rounded-0',placeholder='站内搜素',maxlength=64,value=query)}}
+                    <div class="input-group-btn">
+                        <button class="btn btn-info rounded-0" type="submit"><i class="fa fa-search"></i></button>
+                    </div>
+                </div>
+            </form>
+        </ul>
+        <ul class="navbar-nav">
+            {% if current_user.is_authenticated %}
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false" title="{{current_user.username}}，欢迎回来！">
+
+                    <img class="avatar" src="{{url_for('.static',filename='img/avatar.png')}}" alt="{{current_user.username}}">
+                </a>
+                <div class="dropdown-menu dropdown-menu-right mt-0 rounded-0 border-0" aria-labelledby="navbarDropdown">
+                    <a class="dropdown-item pl-3" href="/profile/">
+                        <i class="fa fa-fw fa-user text-info mr-2"></i>个人资料</a>
+                    <a class="dropdown-item pl-3" href="{{url_for('.logout')}}">
+                        <i class="fa fa-fw fa-sign-out text-info mr-2"></i>退出</a>
+                </div>
+            </li>
+            {% else %}
+            <li class="nav-item mr-2">
+                <a class="nav-link py-md-3" href="{{url_for('main.login')}}">登录</a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>
+<!--导航结束-->
+<!--回到顶部按钮-->
+<div class="text-center" id="to-top">
+    <i class="fa fa-chevron-up" id="btn-top" title="回到顶部"></i>
+</div>

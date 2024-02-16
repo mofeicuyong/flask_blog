@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="referrer" content="origin">
+        <!-- TDK and ICO -->
+        <title>{% block title %}虚假真白萌{% endblock %}</title>
+        
+        <meta name="description" content="{% block description %}{{config.H3BLOG_DESCRIPTION}}{% endblock %}">
+        <meta name="keywords" content="{% block keywords %}{{config.H3BLOG_KEYWORDS}}{% endblock %}">
+
+        {{config.H3BLOG_EXTEND_META | safe}}
+
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+
+        <link rel="shortcut icon" href="{{url_for('main.static',filename='img/favicon.ico')}}" type="image/x-icon"/>
+        {% block css %}
+        <!-- Bootstrap and font-awesome CSS -->
+        <link href="https://s3.pstatp.com/cdn/expire-1-M/twitter-bootstrap/4.6.0/css/bootstrap.css" rel="stylesheet">
+        <link href="https://s2.pstatp.com/cdn/expire-1-M/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+        <script src="{{url_for('main.static',filename='js/headroom.min.js')}}"></script>
+        <!-- blog CSS -->
+
+        <link href="{{url_for('main.static',filename='css/blog.css')}}" rel="stylesheet">
+            <link href="{{url_for('main.static',filename='css/novel.css')}}" rel="stylesheet">
+            <link href="{{url_for('main.static',filename='css/index.css')}}" rel="stylesheet">
+            <link href="{{url_for('main.static',filename='css/layui.css')}}" rel="stylesheet">
+        <!--根据cookies判断是否启用暗色主题-->
+        {% if request.cookies.get('toggleTheme') == "dark" %}
+        <link id="theme-css-dark" href="{{url_for('main.static',filename='css/night.css')}}" rel="stylesheet">
+        {% endif %}
+        {% endblock %}
+    </head>
+
+    <body>
+        {% include 'tend/common/header.html' %}
+        <main>
+        {% block main %}
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-8">
+                    {% block content %}{% endblock %}
+                    </div>
+                    <div class="col-lg-4">
+                    {% include 'tend/common/sidebar.html' %}
+                    </div>
+                </div>
+            </div>
+        {% endblock %}
+        </main>
+        {% include 'tend/common/footer.html' %}
+        {% block js %}
+            <!-- Optional JavaScript -->
+            <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+            <script src="https://s3.pstatp.com/cdn/expire-1-M/jquery/3.3.1/jquery.min.js"></script>
+            <script src="https://s3.pstatp.com/cdn/expire-1-M/popper.js/2.7.0/umd/popper.js"></script>
+            <script src="https://s1.pstatp.com/cdn/expire-1-M/twitter-bootstrap/4.6.0/js/bootstrap.min.js"></script>
+            <script>
+                $(function(){var myElement=document.querySelector(".blog-navbar");var headroom=new Headroom(myElement);headroom.init()});
+            </script>
+            
+            <script src="{{url_for('main.static',filename='js/js.cookie.min.js')}}"></script>
+            <!-- Custom scripts for this template -->
+            <script src="{{url_for('main.static',filename='js/blog.js')}}"></script>
+            <!--网站统计代码-->
+            {{config.H3BLOG_TONGJI_SCRIPT | safe}}
+        {% endblock %}
+    </body>
+</html>

@@ -1,0 +1,62 @@
+{% extends 'tend/common/base.html' %}
+{% import "tend/macros/_flash.html" as flash_macros %}
+{% block title %}登陆{% endblock %}
+{% block css %}
+{{super()}}
+<link href="{{url_for('main.static',filename='css/account.css')}}" rel="stylesheet">
+{% endblock%}
+{% block main %}
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-sm-8 col-md-6 offset-sm-2 offset-md-3 px-xl-5">
+            <div class="card rounded-0 px-3 px-lg-4">
+                <div class="card-header text-center bg-white py-2"><h3 class="my-1 text-info">个人资料</h3></div>
+                <div class="card-body">
+                    {{flash_macros.flash_msg()}}
+                    <ul class="list-group">
+                        <li class="list-group-item text-center border-0" id="profile-avatar">
+                            
+                        <img class="avatar" src="{{url_for('.static',filename='img/avatar.png')}}" alt="hcq">
+
+                        </li>
+                        <li class="list-group-item ml-6 border-0">
+                            <span class="font-weight-bold">用户名：</span>
+                            <span>{{current_user.username}}</span>
+                        </li>
+                        
+                        
+                        <li class="list-group-item ml-6 border-0" title="提示：已验证邮箱的用户有更多特权！">
+                            <span class="font-weight-bold">邮 箱：</span>
+                            <span>{{current_user.email}}</span>
+                            {% if not current_user.email_state %}
+                            <span><a class="btn btn-info btn-sm mx-lg-3 mx-sm-2">验证</a></span>
+                            {% else %}
+                            <span>已验证</span>
+                            {% endif %}
+                        </li>
+
+                        <li class="list-group-item ml-6 border-0" title="提示：会员状态">
+                            <span class="font-weight-bold">会员：</span>
+                            <span>{{current_user.role_name}}</span>
+                        </li>
+
+                        
+                        
+                    </ul>
+                </div>
+                <div class="text-center mb-5" id="social-login">
+                    <div class="login-title"><span>更多操作</span></div>
+                    <div class="more-link mt-3">
+                        <!-- <a class="btn btn-info btn-sm rounded-0 mx-lg-3 mx-sm-2" href="/accounts/profile/change/">修改资料</a> -->
+                        <a class="btn btn-info btn-sm rounded-0 mx-lg-3 mx-sm-2" href="/password">修改信息</a>
+                        {% if current_user.role == 2 %}
+                        <a class="btn btn-info btn-sm rounded-0 mx-lg-3 mx-sm-2" href="{{url_for('.pay')}}">升级VIP会员</a>
+                        {% endif %}
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

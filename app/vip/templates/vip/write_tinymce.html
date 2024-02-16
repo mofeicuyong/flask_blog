@@ -1,0 +1,297 @@
+{% extends 'vip/common/base.html' %}
+{% block css %}
+{{ super() }}
+<link rel="stylesheet" href="{{url_for('.static',filename='editor_md/editormd.min.css')}}">
+<link rel="stylesheet" href="{{url_for('.static',filename='css/write.css')}}">
+<link rel="stylesheet" href="{{url_for('.static',filename='lib/jquery_datepicker/css/foundation-datepicker.css')}}">
+<link rel="stylesheet" href="{{url_for('.static',filename='css/tagsinput.css')}}">
+<link rel="stylesheet" href="{{url_for('.static',filename='css/typeaheadjs.css')}}">
+{% endblock %}
+{% block js %}
+{{ super() }}
+<script src="{{url_for('.static',filename='editor_md/editormd.min.js')}}"></script>
+<script src="{{url_for('.static',filename='lib/jquery_datepicker/js/foundation-datepicker.js')}}"></script>
+<script src="{{url_for('.static',filename='lib/jquery_datepicker/js/foundation-datepicker.zh-CN.js')}}"></script>
+<script src="{{url_for('.static',filename='lib/tinymce/js/tinymce/tinymce.min.js')}}"></script>
+<script src="{{url_for('.static',filename='js/tagsinput.js')}}"></script>
+<script src="{{url_for('.static',filename='lib/typeahead/typeahead.bundle.min.js')}}"></script>
+<script>
+
+    var imagehosting_for = "thumbnail-img";
+    var tinymce_select_img_callback = null;
+    //图床
+    function imagehosting(flag) {
+        imagehosting_for = flag;
+        layer.open({
+            type: 2,
+            title: '图片管理',
+            shade: 0.8,
+            maxmin: true,
+            shadeClose: true,
+            area: ['80%', '90%'],
+            content: '{{url_for("admin.image_hosting")}}' //这里content是一个URL，如果你不想让iframe出现滚动条，你还可以content: ['http://sentsin.com', 'no']
+        });
+    }
+
+    //image_hosting.html图床界面调用该函数
+    function imagehosting_callback(obj) {
+        //缩略图
+        if(imagehosting_for === 'thumbnail-img') {
+            $('#thumbnail-img').attr('src', obj.img_url);
+            $('#thumbnail').val(obj.img_url);
+        }
+        //编辑器 editor.md
+        if(imagehosting_for === 'editor-img') {
+            tinymce_select_img_callback(obj.img_url, { alt: obj.img_name });
+        }
+
+    }
+
+    var myEditor;
+    $(function () {
+
+        tinymce.init({
+            selector: '#write-editor',
+            language:'zh_CN',
+            //skin:'oxide-dark',
+            plugins: 'print preview searchreplace autolink directionality visualblocks visualchars fullscreen image link media template code codesample table charmap hr pagebreak nonbreaking anchor insertdatetime advlist lists wordcount imagetools textpattern help emoticons autosave bdmap indent2em autoresize lineheight formatpainter axupimgs',
+            toolbar: 'code undo redo | forecolor backcolor bold italic underline strikethrough link anchor | alignleft aligncenter alignright alignjustify outdent indent ',
+            height: 650, //编辑器高度
+            min_height: 400,
+            /*content_css: [ //可设置编辑区内容展示的css，谨慎使用
+                '/static/reset.css',
+                '/static/ax.css',
+                '/static/css.css',
+            ],*/
+            fontsize_formats: '12px 14px 16px 18px 24px 36px 48px 56px 72px',
+            font_formats: '微软雅黑=Microsoft YaHei,Helvetica Neue,PingFang SC,sans-serif;苹果苹方=PingFang SC,Microsoft YaHei,sans-serif;宋体=simsun,serif;仿宋体=FangSong,serif;黑体=SimHei,sans-serif;Arial=arial,helvetica,sans-serif;Arial Black=arial black,avant garde;Book Antiqua=book antiqua,palatino;',
+            /*link_list: [
+                { title: '预置链接1', value: 'http://www.tinymce.com' },
+                { title: '预置链接2', value: 'http://tinymce.ax-z.cn' }
+            ], */
+            /*image_list: [
+                { title: '预置图片1', value: 'https://www.tiny.cloud/images/glyph-tinymce@2x.png' },
+                { title: '预置图片2', value: 'https://www.baidu.com/img/bd_logo1.png' }
+            ],*/
+            convert_urls: false,
+            image_class_list: [
+            { title: 'None', value: '' },
+            { title: 'Some class', value: 'class-name' }
+            ],
+            importcss_append: true,
+            //自定义文件选择器的回调内容
+            file_picker_callback: function (callback, value, meta) {
+                if (meta.filetype === 'file') {
+                    callback('https://www.baidu.com/img/bd_logo1.png', { text: 'My text' });
+                }
+                if (meta.filetype === 'image') {
+                    imagehosting('editor-img')
+                    tinymce_select_img_callback = callback;
+                    // callback('https://www.baidu.com/img/bd_logo1.png', { alt: 'My alt text' });
+                }
+                if (meta.filetype === 'media') {
+                    callback('movie.mp4', { source2: 'alt.ogg', poster: 'https://www.baidu.com/img/bd_logo1.png' });
+                }
+            },
+            autosave_ask_before_unload: false,
+        });
+
+        function save(state) {
+            $.ajax({
+                url: '{{url_for("admin.write")}}',
+                type: "post",
+                data: $("form").serialize(),
+                dataType: 'json',
+                success: function (res) {
+                    if (res.code == 1) {
+                        if (res.id) {
+                            $('#id').val(res.id);
+                        }
+                        toastr.success(res.msg);
+                    } else {
+                        toastr.error(res.msg);
+                    }
+                },
+                fail: function (res) {
+                    toastr.error('网络错误');
+                }
+            })
+        }
+
+        //注册保存按钮点击事件
+        $('#form').on('submit', function (ev) {
+            ev.preventDefault();
+            // var content = $('#hidden-body').val();
+            // var summary = content.replace(/#*.*#/g, '').replace(/[^a-z0-9\u4e00-\u9fa5]/, '').substring(0, 200) // 除去标题部分，截取200个字用来显示
+            // $('#summary').val(summary);
+            save(1);
+        });
+
+        //setInterval(save,1000 * 15,1);
+
+        //注册草稿按钮
+        $('#draft').click(function (e) {
+            $('#state').val(0);
+            $('#form').submit();
+        });
+
+        //注册发布按钮点击
+        $('#publish').click(function (e) {
+            $('#state').val(1);
+            $('#form').submit();
+        });
+
+        //上传图片
+        $('#thumbnail-upload-btn').click(function (e) {
+            imagehosting('thumbnail-img');
+        });
+
+        //固定路径编辑
+        $('#baseURL').html(window.location.protocol + "//" + window.location.host + '/');
+
+        $('#timestamp').fdatepicker({
+			format: 'yyyy-mm-dd hh:ii:ss',
+			pickTime: true
+        });
+        
+        //tags
+        $('#tags').tagsinput({
+            typeahead: {
+                // source: function(query) {
+                //     return $.get('http://someservice.com');
+                // }
+                source: ['Amsterdam', 'Washington', 'Sydney', 'Beijing', 'Cairo']
+            }
+        });
+    })
+</script>
+{% endblock %}
+{% block content %}
+<div class="content-wrapper" style="min-height: 600px;">
+    <section class="content-header">
+        <h3>撰写</h3>
+    </section>
+    <section class="content">
+        <form id="form" method="POST">
+            {{ form.hidden_tag() }}
+            {{form.editor()}}
+            <div class="row">
+                <div class="col-lg-9 col-md-9">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="inputGroup-sizing-default">标题</span>
+                        </div>
+                        {{form.title(class='form-control')}}
+                    </div>
+                    <div class="mb-2 ml-2">
+                        <div class="row justify-content-between">
+                            <div class="col-10">
+                                网址:<span
+                                id="baseURL">http://www.h3blog.com/</span>article/{{form.name(class='border-top-0 border-left-0 border-right-0 input-small w-auto')}}
+                            </div>
+                            <div class="col-2 mr-auto">
+                                <a href="{{ request.path + '?editor=markdown'}}">切换编辑器</a>
+                            </div>
+                          </div>
+                        
+                            
+                    </div>
+                    <div class="write-article">
+                        <!-- <div id="write-editor"></div> -->
+                        {{form.content_html(id='write-editor',class='hidden')}}
+                    </div>
+                    <div class="accordion" id="accordionExample">
+                        <div class="card">
+                            <div class="card-header" id="headingOne" style="padding:0px;">
+                              <h2 class="mb-0">
+                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                  文章简介
+                                </button>
+                              </h2>
+                            </div>
+                        
+                            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+                              <div class="card-body">
+                                {{form.summary(id='summary',class='form-control')}}
+                              </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header" id="headingTwo" style="padding:0px;">
+                              <h2 class="mb-0">
+                                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                                  权限内容
+                                </button>
+                              </h2>
+                            </div>
+                        
+                            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+                              <div class="card-body">
+                                <div class="form-group row">
+                                    <label for="staticEmail" class="col-sm-2 col-form-label">选择角色</label>
+                                    <div class="col-sm-10">
+                                        {{form.h_role(class='form-control')}}
+                                    </div>
+                                  </div>
+                                  <div class="form-group row">
+                                    <label for="inputPassword" class="col-sm-2 col-form-label">可见内容</label>
+                                    <div class="col-sm-10">
+                                        {{form.h_content(class='form-control')}}
+                                    </div>
+                                </div>
+                              </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-3">
+                    <div id="saveBtns" class="card">
+                        <div class="card-body">
+                            {{form.save(id='save',class="btn btn-primary btn-sm")}}
+                            <button id='draft' type="button" class="btn btn-secondary btn-sm">草稿</button>
+                            <button id='publish' type="button" class="btn btn-success btn-sm">发布</button>
+                        </div>
+                    </div>
+                    <!--save btn end-->
+
+                    <div id="category" class="card mt-3">
+                        <h6 class="card-title p-2 border-bottom">分类</h6>
+                        <div class="card-body">
+                            {{form.category_id(id='category_id',class='form-control')}}
+                        </div>
+                    </div>
+                    <!--category end-->
+                    <div id="tags_div" class="card mt-3">
+                        <h6 class="card-title p-2 border-bottom">标签</h6>
+                        <div class="card-body">
+                            {{form.tags(class='form-control')}}
+                        </div>
+                    </div>
+                    <!--tags end-->
+                    <div id="thumbnail-div" class="card mt-3">
+                        <h6 class="card-title p-2 border-bottom">缩略图</h6>
+                        <div class="card-body">
+                            <img id="thumbnail-img"
+                                src="{{form.thumbnail.data if form.thumbnail.data else url_for('static',filename='img/thumbnail.jpg')}}"
+                                class="card-img-top" alt="缩略图">
+                            <div class="mt-2">
+                                <button id="thumbnail-upload-btn" type="button"
+                                    class="btn btn-outline-secondary btn-sm">选择图片</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!--thumbnail end-->
+                    <div id="publish-time" class="card mt-3">
+                        <h6 class="card-title p-2 border-bottom">发布时间</h6>
+                        <div class="card-body">
+                            {{form.timestamp(type='datetime',class='form-control')}}
+                        </div>
+                    </div><!--publish time end-->
+                </div>
+            </div>
+        </form>
+
+    </section>
+</div>
+{% endblock %}

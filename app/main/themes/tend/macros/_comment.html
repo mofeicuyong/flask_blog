@@ -1,0 +1,87 @@
+{% macro macro_comment(article,current_user) %}
+<!--评论开始-->
+<div class="card mt-2 rounded-0 border-0" id="comment-block">
+    <div class="card border-0 rounded-0 f-16" id="editor-block">
+        {% if current_user.is_authenticated %}
+        <div class="card-body p-2 p-md-3">
+            <textarea class="form-control rounded-0" id="comment-form" name="text" placeholder="评论请使用 markdown 语法"
+                rows="5" required></textarea>
+        </div>
+        <div class="card-footer border-0 bg-white py-0 px-2 px-md-3" id="editor-footer">
+            <button type="button" class="btn btn-info btn-sm float-right f-16" id="push-com"
+                data-csrf="" data-article-id="{{article.id}}"
+                data-ajax-url="{{url_for('main.comment_add')}}">提交评论</button>
+        </div>
+        {% else %}
+        <div class="card-body text-center m-2 m-md-3 f-16" id="no-editor">
+            <div>您尚未登录，请
+                <a class="text-danger" href="{{url_for('main.login')}}">登录</a> 或
+                <a class="text-danger" href="{{url_for('main.regist')}}">注册</a> 后评论
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card-body p-2 p-md-3 f-17" id="comment-list">
+        <ul class="list-unstyled">
+            <div class="mb-3">
+                <strong>共&nbsp;{{article.comment_num}}&nbsp;条评论</strong>
+            </div>
+            {{ _comment_list(article.comments.filter_by(reply_id = None)) }}
+
+        </ul>
+    </div>
+</div>
+<!--评论结束-->
+{% endmacro %}
+
+
+{% macro _comment_list(comments) %}
+    {% for c in comments %}
+            <div class="comment-parent pt-2" id="com-{{c.id}}">
+                <li class="media">
+                 <img class="avatar" src="{{url_for('.static',filename='img/avatar.png')}}" alt="{{c.user.username}}">
+                    <div class="media-body ml-2">
+                        <a class="float-right small mr-2 rep-btn" href="#editor-block" data-repid="{{c.id}}" data-repuser="{{c.user.username}}">回复</a>
+                        <p class="mt-0 mb-1">
+                            <strong title="该用户未认证或没有个人站点">{{c.user.username}}</strong>
+                        </p>
+                        <p class="small text-muted">{{c.timestamp.strftime("%Y年%m月%d日 %H:%M")}}</p>
+                    </div>
+                </li>
+                <div class="comment-body">{{c.content|safe}}</div>
+            </div>
+               {{ _children(c.replies) }}
+            {% endfor %}
+{% endmacro %}
+
+{% macro _children(comments) %}
+        {% if comments | length > 0 %}
+                <ul class="list-unstyled ml-4">
+                    {% for cc in comments %}
+                    <div class="comment-child pt-2" id="com-{{cc.id}}">
+                        <li class="media">
+                            <img class="avatar" src="{{url_for('.static',filename='img/avatar.png')}}" alt="{{cc.user.username}}">
+        
+                            <div class="media-body ml-2">
+                                <a class="float-right small mr-2 rep-btn" href="#editor-block" data-repid="{{cc.id}}" data-repuser="{{cc.user.username}}">回复</a>
+                                <p class="mt-0 mb-1">
+                                    
+                                    
+                                    <strong>
+                                        {{cc.user.username}}
+                                    </strong>
+                                    
+                                    <i class="fa fa-share"></i>
+                                    {{cc.comment.user.username}}
+                                </p>
+                                <p class="small text-muted">{{cc.timestamp.strftime("%Y年%m月%d日 %H:%M")}}</p>
+                            </div>
+                        </li>
+                        <div class="comment-body">{{cc.content|safe}}</div>
+                    </div>
+                    {{ _children(cc.replies) }}
+                    {% endfor %}
+                </ul>
+                {% endif %}
+{% endmacro %}

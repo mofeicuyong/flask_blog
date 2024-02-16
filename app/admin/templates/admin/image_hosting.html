@@ -1,0 +1,263 @@
+{% extends 'admin/common/base.html' %}
+{% import "admin/macros/_patination.html" as page_macros %}
+{% block css %}
+{{super()}}
+<style>
+    .selectCard {
+        border: 2px solid rgb(48, 4, 241);
+    }
+
+    .navbar img {
+        width: 80px;
+        height: 60px;
+    }
+</style>
+{% endblock %}
+{% block js %}
+{{super()}}
+<script>
+    var index = parent.layer.getFrameIndex(window.name); //获取窗口索引
+    //给父页面传值
+    $('#ok').on('click', function () {
+        var img_url = $('#selectImg').prop('src');
+        var img_name = $('#selectImg').prop('alt');
+        if (img_url.indexOf('...') > 0) {
+            toastr.error('请选择图片');
+            return;
+        }
+        var obj = {};
+        obj.img_url = img_url;
+        obj.img_name = img_name;
+        parent.imagehosting_callback(obj);
+        // parent.$('#parentIframe').text('我被改变了');
+        // parent.layer.tips('Look here', '#parentIframe', {time: 5000});
+        parent.layer.close(index);
+    });
+
+    var current_card = null;
+    $('.card').click(function (e) {
+        $('.card').removeClass('selectCard')
+        $(this).addClass('selectCard');
+        current_card = $(this)
+        var img_url = current_card.find('img').prop('src');
+        var img_name = current_card.find('h5').html();
+        $('#selectImg').prop('src', img_url).prop('alt', img_name);
+    });
+
+    //上传图片
+    $('#upload-btn').click(function (e) {
+        $("#img-file").trigger("click");
+    });
+
+    $("#img-file").change(function () {
+        var formdata = new FormData();
+        formdata.append('csrf_token','{{csrf_token()}}');
+        formdata.append('file', $("#img-file")[0].files[0]); //获取图片信息
+        $.ajax({
+            url: "{{url_for('admin.upload')}}",
+            type: 'post',
+            data: formdata,
+            cache: false,
+            dataType: 'json',
+            processData: false,
+            contentType: false,
+            success: function (res) {
+                if (res.code === 1) {
+                    toastr.success(res.msg)
+                    window.location.reload();
+                } else {
+                    toastr.error(res.msg)
+                }
+            }
+        });
+    });
+
+    //弹出创建图片层
+    $('#create-btn').click(function (e) {
+        layer.open({
+            type: 1,
+            area: ['auto'],
+            title: '图片DIY',
+            maxmin: true,
+            shadeClose: true,
+            area: ['80%', '90%'],
+            content: $('#edit-image')
+        });
+    });
+    //预览
+    $('#create_preview').click(function(e){
+        var q = $('#draw_form').serialize();
+        
+        $('#img_show').attr('src', "{{url_for('admin.draw_preview')}}" + '?' + q)
+    });
+
+    //保存图片
+    $('#create_update').click(function(e){
+        let img_url = "{{url_for('admin.draw_preview')}}" + '?' + $('#draw_form').serialize();
+        let name = $('#title').val()
+        if(name.length == 0) {
+            name = '自动生成图片'
+        }
+        name = name + '.png'
+        var c = document.createElement("canvas");
+        var cxt=c.getContext("2d");
+        var img=new Image();
+        img.setAttribute("crossOrigin",'Anonymous');
+        img.onload=function(){
+            var fileIndex=this.src.lastIndexOf("/");
+            var filename= this.src.substr(fileIndex+1);
+    
+            c.width = this.width;
+            c.height = this.height;
+            cxt.drawImage(img, 0, 0, this.width, this.height) // 在canvas上绘制图片
+            var dataURL = compress(img,this.width,this.height,0.8);
+            /*为了兼容ios 需要 dataURL-> blob -> file */
+            var blob = dataURLtoBlob(dataURL);		// dataURL-> blob
+            var file = blobToFile(blob, filename);		// blob -> file
+            console.log("得到文件："+file);
+            console.log("压缩后大小："+file.size/1024);
+    
+            
+            var fd = new FormData();
+            fd.append('csrf_token','{{csrf_token()}}');
+            fd.append("file",file  ,name);
+            //fd.append("files",file ,filename);
+            $.ajax({
+                url: "{{url_for('admin.upload')}}",
+                type : 'POST',
+                dataType : 'json',
+                cache : false,
+                contentType : false,//（必须这样配置）
+                processData : false,    //JQuery不处理发送数据
+    // 			contentType : 'multipart/form-data',（如果这样，会导致contentType没有边界boundary，导致文件解析失败，后台报错Could not parse multipart servlet request;）
+                data: fd,
+                success: function (res) {
+                    if (res.code === 1) {
+                        toastr.success(res.msg)
+                        window.location.reload();
+                    } else {
+                        toastr.error(res.msg)
+                    }
+                },error:function(res){
+                    console.error(filename+'上传失败\n');
+                }
+            })
+    
+    
+        }
+        
+        img.src = img_url;
+    
+        function compress(img, width, height, ratio) {
+            // img可以是dataURL或者图片url
+            /*	如果宽度大于 750 图片太大 等比压缩 	*/
+            if(width > 750){
+                var ratio = width/height;
+                width = 750;
+                height = 750/ratio;
+            }
+            var canvas, ctx, img64;
+            canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+    
+    
+            ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+            /* canvas.toDataURL(mimeType（图片的类型）, qualityArgument（图片质量）) */
+            img64 = canvas.toDataURL("image/jpeg", ratio);
+    
+            return img64; // 压缩后的base64串
+        }
+        //将base64转换为blob
+        function dataURLtoBlob (dataurl) {
+            var arr = dataurl.split(','),
+                mime = arr[0].match(/:(.*?);/)[1],
+                bstr = atob(arr[1]),
+                n = bstr.length,
+                u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new Blob([u8arr], { type: mime });
+        }
+        //将blob转换为file
+        function blobToFile(theBlob, fileName){
+            theBlob.lastModifiedDate = new Date();
+            theBlob.name = fileName;
+            return theBlob;
+        }
+    })
+</script>
+{% endblock %}
+{% block body %}
+<div class="container mt-1">
+    <div class="row">
+        {% for img in imgs.items%}
+        <div class="card m-1" style="width: 13rem;">
+            <img src="{{img.url}}" class="card-img-top rounded" style="height: 12rem;" alt="{{img.name}}">
+            <div class="card-body">
+                <span>{{img.name}}</span>
+            </div>
+        </div>
+        <!--end card-->
+        {% endfor %}
+    </div>
+    {{ page_macros.pagination_widget(imgs, request.endpoint) }}
+    <div class="m-3" style="height: 3rem;"></div>
+    <div class="row fixed-bottom bg-light navbar">
+        <input type="file" hidden id="img-file" accept="image/*"/>
+        <img id="selectImg" src="..." class="rounded float-left" alt="请选择图片">
+        <div>
+            <button id="create-btn" class="btn btn-primary p-2">创建图片</button>
+            &nbsp;&nbsp;&nbsp;
+            <button id="upload-btn" class="btn btn-primary p-2">上传</button>
+            &nbsp;&nbsp;&nbsp;
+            <button id="ok" class="btn btn-primary p-2 m-2">确定</button>
+        </div>
+    </div>
+</div>
+<div id="edit-image" style="display: none;">
+<div class="container m-1">
+    <div class="row">
+        <div class="col-sm border-right">
+            <form id="draw_form">
+                <div class="form-row">
+                    <div class="form-group col-md-5">
+                        <label for="width">宽</label>
+                        <input type="number" class="form-control" name="width" id="width" placeholder="图片宽" value="800">
+                    </div>
+                    <div class="form-group col-md-5">
+                        <label for="height">高</label>
+                        <input type="number" class="form-control" name="height" id="height" placeholder="图片高" value="400">
+                    </div>
+                    <div class="form-group col-md-2">
+                        <label for="background_color">背景颜色</label>
+                        <input type="color" class="form-control" name="background_color" id="background_color" value="#424155">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="title">标题</label>
+                    <textarea class="form-control" id="title" name="title" placeholder="填写标题">何三笔记</textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="title_color">字体大小</label>
+                            <input type="number" class="form-control" name="title_size" id="title_size" value="60">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="title_color">字体颜色</label>
+                            <input type="color" class="form-control" name="title_color" id="title_color" value="#ffffff">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" id="create_preview">预览</button>
+                <button type="button" class="btn btn-primary" id="create_update">上传</button>
+            </form>
+        </div>
+        <div class="col-sm">
+            <img id="img_show" style="width: 100%;">
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

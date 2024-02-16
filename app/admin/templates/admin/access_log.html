@@ -1,0 +1,53 @@
+{% extends 'admin/common/base.html' %}
+{% import "admin/macros/_patination.html" as page_macros %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <h3>抓取日志列表</h3>
+        <form class="ml-3">
+          <div class="form-row align-items-center">
+            <div class="col-auto">
+              <label class="sr-only" for="remark">搜索引擎</label>
+              <input type="text" name="remark" value="{{params.remark}}" class="form-control mb-2" id="remark" placeholder="搜索引擎">
+            </div>
+            <!-- <div class="col-auto">
+              <label class="sr-only" for="inlineFormInputGroup">Username</label>
+              <div class="input-group mb-2">
+                <div class="input-group-prepend">
+                  <div class="input-group-text">@</div>
+                </div>
+                <input type="text" class="form-control" id="inlineFormInputGroup" placeholder="Username">
+              </div>
+            </div> -->
+            <div class="col-auto">
+              <button type="submit" class="btn btn-primary mb-2">搜索</button>
+            </div>
+          </div>
+        </form>
+        <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">搜索引擎</th>
+                <th scope="col">ip</th>
+                <th scope="col">抓取路径</th>
+                <th scope="col">抓取时间</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for l in logs.items %}
+              <tr>
+                <th scope="row">{{l.id}}</th>
+                <td>{{ l.remark }}</td>
+                <td>{{ l.ip }}</td>
+                <td>{{ l.url }}</td>
+                <td>{{l.timestamp.strftime("%Y-%m-%d %H:%M:%S")}}</td>
+                    
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+    </div>
+    {{ page_macros.pagination_widget(logs, request.endpoint,remark=params.remark) }}
+</div>
+{% endblock %}
